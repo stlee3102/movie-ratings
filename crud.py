@@ -55,6 +55,22 @@ def create_rating(user, movie, score):
 
     return rating
 
+def update_rating(user, movie, score):
+    """Update rating"""
+
+    rating = Rating.query.filter_by(user_id = "user.user_id").first()
+    db.session.delete(rating)
+    db.session.commit()
+
+    rating = Rating(user=user, movie=movie, score=score)
+    db.session.add(rating)
+    db.session.commit()
+
+def return_all_ratings(user, movie):
+    """Return all ratings"""
+    return Rating.query.filter_by(user=user, movie=movie).all()
+
+
 if __name__ == '__main__':
     from server import app
     connect_to_db(app)

@@ -1,6 +1,6 @@
 """Server for movie ratings app."""
 
-from flask import (Flask, render_template, request, flash, session, redirect)
+from flask import (Flask, render_template, request, flash, session, redirect, url_for)
 from model import connect_to_db
 import crud
 
@@ -31,20 +31,34 @@ def show_movie(movie_id):
 
     movie = crud.get_movie_by_id(movie_id)
 
-    return render_template('movie_details.html', movie=movie)
+    user = crud.get_user_by_id(session['user'])
+    movie_ratings = movie.ratings
+
+    total_score = 0
+    for ratings in movie.ratings:
+        total_score += ratings.score
+    if total_score == 0:
+        avg_rating = 'Not rated'
+    else:
+        avg_rating = total_score/len(movie.ratings)
+
+    return render_template('movie_details.html', movie=movie, movie_ratings=movie_ratings, user=user, avg_rating=avg_rating)
 
 @app.route("/rate_movie/<movie_id>", methods=["POST"])
 def rate_movie(movie_id):
+    """Create a new movie rating"""
 
     movie = crud.get_movie_by_id(movie_id)
     score = request.form.get("score")
     user = crud.get_user_by_id(session['user'])
+    movie_ratings_for_user = crud.return_all_ratings(user, movie)
 
-    new_rating = crud.create_rating(user, movie, score)
-    
-    movie_ratings = movie.ratings
-
-    return render_template('movie_details.html', movie_ratings = movie_ratings)
+    if user.user_id in movie_ratings_for_user:
+        crud.create_rating(user, movie, score)
+    else:
+        crud.update_rating(user, movie, score)
+  
+    return redirect(f'/movies/{movie_id}')
 
 @app.route('/users')
 def show_all_users():
@@ -57,7 +71,6 @@ def show_all_users():
 def register_user():
     email = request.form.get("email")
     password = request.form.get("password")
-
     user = crud.get_user_by_email(email)
 
     if user:
@@ -65,7 +78,6 @@ def register_user():
     else:
         crud.create_user(email, password)
         flash("Account registered")
-    
     return redirect("/")
 
 
