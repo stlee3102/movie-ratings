@@ -49,7 +49,6 @@ def create_rating(user, movie, score):
     """Create and return a new rating"""
 
     rating = Rating(user=user, movie=movie, score=score)
-
     db.session.add(rating)
     db.session.commit()
 
@@ -58,17 +57,12 @@ def create_rating(user, movie, score):
 def update_rating(user, movie, score):
     """Update rating"""
 
-    rating = Rating.query.filter_by(user_id = "user.user_id").first()
-    db.session.delete(rating)
+    Rating.query.filter(Rating.movie_id == movie.movie_id, Rating.user_id == user.user_id).update({"score": score})
     db.session.commit()
 
-    rating = Rating(user=user, movie=movie, score=score)
-    db.session.add(rating)
-    db.session.commit()
-
-def return_all_ratings(user, movie):
-    """Return all ratings"""
-    return Rating.query.filter_by(user=user, movie=movie).all()
+def get_rating_by_movie_by_user(movie, user):
+    """Return a ratings for a movie by a user"""
+    return Rating.query.filter_by(movie=movie, user=user).all()
 
 
 if __name__ == '__main__':

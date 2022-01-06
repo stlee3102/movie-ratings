@@ -3,6 +3,7 @@
 from flask import (Flask, render_template, request, flash, session, redirect, url_for)
 from model import connect_to_db
 import crud
+from flask_sqlalchemy import SQLAlchemy
 
 from jinja2 import StrictUndefined
 
@@ -38,9 +39,9 @@ def show_movie(movie_id):
     for ratings in movie.ratings:
         total_score += ratings.score
     if total_score == 0:
-        avg_rating = 'Not rated'
+        avg_rating = 'Not yet rated'
     else:
-        avg_rating = total_score/len(movie.ratings)
+        avg_rating = f'{total_score/len(movie.ratings)} stars'
 
     return render_template('movie_details.html', movie=movie, movie_ratings=movie_ratings, user=user, avg_rating=avg_rating)
 
@@ -50,13 +51,12 @@ def rate_movie(movie_id):
 
     movie = crud.get_movie_by_id(movie_id)
     score = request.form.get("score")
-    user = crud.get_user_by_id(session['user'])
-    movie_ratings_for_user = crud.return_all_ratings(user, movie)
+    rating_user = crud.get_user_by_id(session['user'])
 
-    if user.user_id in movie_ratings_for_user:
-        crud.create_rating(user, movie, score)
+    if crud.get_rating_by_movie_by_user(movie, rating_user):
+        crud.update_rating(rating_user, movie, score)
     else:
-        crud.update_rating(user, movie, score)
+        crud.create_rating(rating_user, movie, score)
   
     return redirect(f'/movies/{movie_id}')
 
