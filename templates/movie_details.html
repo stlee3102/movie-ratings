@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }} - Details{% endblock %}
+
+{% block body %}
+<h1>{{ movie.title }}</h1>
+
+<p>
+  {{ movie.overview }}
+</p>
+
+<h2> Rate this movie </h2>
+
+<form action="/rate_movie/{{movie.movie_id}}" method="POST">
+  <input type = "radio" name = "score" id= "score1" value = "1">
+  <label for ="score1">1 Star</label><br>
+  <input type = "radio" name = "score" id= "score2" value = "2">
+  <label for ="score2">2 Star</label><br>
+  <input type = "radio" name = "score" id= "score3" value = "3">
+  <label for ="score3">3 Star</label><br>
+  <input type = "radio" name = "score" id= "score4" value = "4">
+  <label for ="score4">4 Star</label><br>
+  <input type = "radio" name = "score" id= "score5" value = "5">
+  <label for ="score5">5 Star</label><br>
+  <input type = "submit" value="submit">
+</form>
+
+<h2> This Movie's Ratings:</h2>
+
+<p>avg rating is {{avg_rating}} </p>
+
+{% if movie_ratings: %}
+
+{% for rating in movie_ratings %}
+{% if rating.user.email == user.email %}
+<p>Your rating is {{rating.score}} </p>
+{% endif %}
+{% endfor %}
+
+{% for rating in movie_ratings %}
+<li>{{rating.user.email}} rated this movie {{rating.score}} stars</li>
+{% endfor %}
+
+{% endif %}
+
+<img src="{{ movie.poster_path }}">
+{% endblock %}
